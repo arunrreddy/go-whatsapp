@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/Rhymen/go-whatsapp/binary"
-	"github.com/Rhymen/go-whatsapp/binary/proto"
+	"github.com/arunrreddy/go-whatsapp/binary"
+	"github.com/arunrreddy/go-whatsapp/binary/proto"
 	"io"
 	"math/rand"
 	"strconv"
@@ -88,6 +88,7 @@ func (wac *Conn) sendProto(p *proto.WebMessageInfo) (<-chan string, error) {
 		},
 		Content: []interface{}{p},
 	}
+	fmt.Printf("Before binary conversion %v", n)
 	return wac.writeBinary(n, message, ignore, p.Key.GetId())
 }
 

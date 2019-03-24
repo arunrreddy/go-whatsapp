@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"github.com/Rhymen/go-whatsapp/binary"
-	"github.com/Rhymen/go-whatsapp/crypto/cbc"
+	"github.com/arunrreddy/go-whatsapp/binary"
+	"github.com/arunrreddy/go-whatsapp/crypto/cbc"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"strconv"
@@ -37,16 +37,19 @@ func (wac *Conn) writeBinary(node binary.Node, metric metric, flag flag, message
 	if len(messageTag) < 2 {
 		return nil, ErrMissingMessageTag
 	}
-
+	fmt.Printf("Message Tag: %s", messageTag)
+	fmt.Printf("Flag: %v", flag)
+	fmt.Printf("Message: %v", node)
 	data, err := wac.encryptBinaryMessage(node)
 	if err != nil {
 		return nil, errors.Wrap(err, "encryptBinaryMessage(node) failed")
 	}
-
+	fmt.Printf("Encrypted Binary Message: %v", data)
 	bytes := []byte(messageTag + ",")
 	bytes = append(bytes, byte(metric), byte(flag))
 	bytes = append(bytes, data...)
-
+	fmt.Printf("Message Type: %v", websocket.BinaryMessage)
+	fmt.Printf("Encoded message: %v", bytes)
 	ch, err := wac.write(websocket.BinaryMessage, messageTag, bytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to write message")
