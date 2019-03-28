@@ -17,18 +17,22 @@ func NewEncoder() *binaryEncoder {
 }
 
 func (w *binaryEncoder) GetData() []byte {
+	fmt.Printf("Data: %+v", w.data)
 	return w.data
 }
 
 func (w *binaryEncoder) pushByte(b byte) {
+	fmt.Printf("PushByte: %+v", b)
 	w.data = append(w.data, b)
 }
 
 func (w *binaryEncoder) pushBytes(bytes []byte) {
+	fmt.Printf("PushBytes: %+v", PushBytes)
 	w.data = append(w.data, bytes...)
 }
 
 func (w *binaryEncoder) pushIntN(value, n int, littleEndian bool) {
+	fmt.Printf("PustIntN: %+v", value)
 	for i := 0; i < n; i++ {
 		var curShift int
 		if littleEndian {
@@ -41,30 +45,37 @@ func (w *binaryEncoder) pushIntN(value, n int, littleEndian bool) {
 }
 
 func (w *binaryEncoder) pushInt20(value int) {
+	fmt.Printf("PustInt20: %+v", value)
 	w.pushBytes([]byte{byte((value >> 16) & 0x0F), byte((value >> 8) & 0xFF), byte(value & 0xFF)})
 }
 
 func (w *binaryEncoder) pushInt8(value int) {
+	fmt.Printf("PustInt8: %+v", value)
 	w.pushIntN(value, 1, false)
 }
 
 func (w *binaryEncoder) pushInt16(value int) {
+	fmt.Printf("PustInt16: %+v", value)
 	w.pushIntN(value, 2, false)
 }
 
 func (w *binaryEncoder) pushInt32(value int) {
+	fmt.Printf("PustInt32: %+v", value)
 	w.pushIntN(value, 4, false)
 }
 
 func (w *binaryEncoder) pushInt64(value int) {
+	fmt.Printf("PustInt64: %+v", value)
 	w.pushIntN(value, 8, false)
 }
 
 func (w *binaryEncoder) pushString(value string) {
+	fmt.Printf("PushString: %+v", value)
 	w.pushBytes([]byte(value))
 }
 
 func (w *binaryEncoder) writeByteLength(length int) error {
+	fmt.Printf("WriteByteLength: ", length)
 	if length > math.MaxInt32 {
 		return fmt.Errorf("length is too large: %d", length)
 	} else if length >= (1 << 20) {
@@ -82,6 +93,7 @@ func (w *binaryEncoder) writeByteLength(length int) error {
 }
 
 func (w *binaryEncoder) WriteNode(n Node) error {
+	fmt.Printf("WriteNode: ", n)
 	numAttributes := 0
 	if n.Attributes != nil {
 		numAttributes = len(n.Attributes)
@@ -109,6 +121,7 @@ func (w *binaryEncoder) WriteNode(n Node) error {
 }
 
 func (w *binaryEncoder) writeString(tok string, i bool) error {
+	fmt.Printf("WriteString: %+v %+v", tok, i)
 	if !i && tok == "c.us" {
 		if err := w.writeToken(token.IndexOfSingleToken("s.whatsapp.net")); err != nil {
 			return err
@@ -148,6 +161,7 @@ func (w *binaryEncoder) writeString(tok string, i bool) error {
 }
 
 func (w *binaryEncoder) writeStringRaw(value string) error {
+	fmt.Printf("WriteStringRaw: %+v", value)
 	if err := w.writeByteLength(len(value)); err != nil {
 		return err
 	}
@@ -158,6 +172,7 @@ func (w *binaryEncoder) writeStringRaw(value string) error {
 }
 
 func (w *binaryEncoder) writeJid(jidLeft, jidRight string) error {
+	fmt.Printf("WriteJid: %+v %+v", jidLeft, jidRight)
 	w.pushByte(token.JID_PAIR)
 
 	if jidLeft != "" {
@@ -178,6 +193,7 @@ func (w *binaryEncoder) writeJid(jidLeft, jidRight string) error {
 }
 
 func (w *binaryEncoder) writeToken(tok int) error {
+	fmt.Printf("WriteToken: %+v", tok)
 	if tok < len(token.SingleByteTokens) {
 		w.pushByte(byte(tok))
 	} else if tok <= 500 {
@@ -188,6 +204,7 @@ func (w *binaryEncoder) writeToken(tok int) error {
 }
 
 func (w *binaryEncoder) writeAttributes(attributes map[string]string) error {
+	fmt.Printf("WriteAttributes: %+v", attributes)
 	if attributes == nil {
 		return nil
 	}
@@ -210,6 +227,7 @@ func (w *binaryEncoder) writeAttributes(attributes map[string]string) error {
 }
 
 func (w *binaryEncoder) writeChildren(children interface{}) error {
+	fmt.Printf("WriteChildren: %+v", children)
 	if children == nil {
 		return nil
 	}
@@ -240,6 +258,7 @@ func (w *binaryEncoder) writeChildren(children interface{}) error {
 }
 
 func (w *binaryEncoder) writeListStart(listSize int) {
+	fmt.Printf("WriteListStart: %+v", )
 	if listSize == 0 {
 		w.pushByte(byte(token.LIST_EMPTY))
 	} else if listSize < 256 {
@@ -252,6 +271,7 @@ func (w *binaryEncoder) writeListStart(listSize int) {
 }
 
 func (w *binaryEncoder) writePackedBytes(value string) error {
+	fmt.Printf("WritePackedBytes: %+v", value)
 	if err := w.writePackedBytesImpl(value, token.NIBBLE_8); err != nil {
 		if err := w.writePackedBytesImpl(value, token.HEX_8); err != nil {
 			return err
@@ -262,6 +282,7 @@ func (w *binaryEncoder) writePackedBytes(value string) error {
 }
 
 func (w *binaryEncoder) writePackedBytesImpl(value string, dataType int) error {
+	fmt.Printf("writePackedBytesImpl: %+v", value)
 	numBytes := len(value)
 	if numBytes > token.PACKED_MAX {
 		return fmt.Errorf("too many bytes to pack: %d", numBytes)
@@ -296,6 +317,7 @@ func (w *binaryEncoder) writePackedBytesImpl(value string, dataType int) error {
 }
 
 func (w *binaryEncoder) packBytePair(packType int, part1, part2 string) (int, error) {
+	fmt.Printf("PackBytePair: %+v, %+v, %+v", packType, part1, part2)
 	if packType == token.NIBBLE_8 {
 		n1, err := packNibble(part1)
 		if err != nil {
@@ -326,6 +348,7 @@ func (w *binaryEncoder) packBytePair(packType int, part1, part2 string) (int, er
 }
 
 func packNibble(value string) (int, error) {
+	fmt.Printf("PackNibble: %+v", value)
 	if value >= "0" && value <= "9" {
 		return strconv.Atoi(value)
 	} else if value == "-" {
@@ -340,6 +363,7 @@ func packNibble(value string) (int, error) {
 }
 
 func packHex(value string) (int, error) {
+	fmt.Printf("PackHex: %+v", value)
 	if (value >= "0" && value <= "9") || (value >= "A" && value <= "F") || (value >= "a" && value <= "f") {
 		d, err := strconv.ParseInt(value, 16, 0)
 		return int(d), err
